@@ -1,0 +1,6 @@
+notes:
+    lang: 'fr'
+    title: 'Carnet'
+    empty: 'Aucune note pour l’instant.'
+    all: 'Toutes les notes'
+    count: '{count, plural, =0 {aucune note} one {une note} other {# notes}}'

@@ -1,0 +1,8 @@
+# No account: the reference application's pages are public. One firewall, as omnibase's services read it.
+security:
+    providers:
+        nobody: {memory: {users: []}}
+    firewalls:
+        main:
+            lazy: true
+            provider: nobody

@@ -1,0 +1,11 @@
+/vendor/
+/composer.lock
+/var/
+/hosts/*/vendor/
+/hosts/*/composer.lock
+/hosts/symfony/var/
+/hosts/symfony/public/images/
+/hosts/symfony/public/uploads/
+/hosts/symfony/public/wysiwyg/
+/.phpunit.cache/
+/versions.txt

@@ -1,0 +1,4 @@
+# The routes the actions declare (#[Route]), the same classes omnibridge/laravel's ActionRoutes reads.
+actions:
+    resource: '../../../app/src/Action/'
+    type: attribute

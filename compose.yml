@@ -1,0 +1,90 @@
+# The reference application under both hosts, on one MySQL database (database/schema.sql and seed.sql, loaded
+# when the volume is new), and the parity suite asking both the same addresses:
+#
+#   make install   # each host's Composer install, in the php image
+#   make up        # MySQL, then the Symfony host on :8701 and the Laravel host on :8702, healthy
+#   make parity    # tests/Parity against both
+#   make down      # everything stopped, the database's volume removed
+name: omnibridge-parity
+
+x-php: &php
+  build: {context: ., dockerfile: docker/Dockerfile}
+  image: omnibridge-parity-php
+  volumes:
+    - .:/srv/parity
+  environment: &env
+    COMPOSER_AUTH: ${COMPOSER_AUTH:-}
+    COMPOSER_CACHE_DIR: /srv/parity/var/composer-cache
+
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: parity
+      MYSQL_USER: parity
+      MYSQL_PASSWORD: parity
+      MYSQL_ROOT_PASSWORD: root
+      TZ: UTC
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    volumes:
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'mysql -uparity -pparity -h127.0.0.1 parity -e "SELECT COUNT(*) FROM note" >/dev/null 2>&1']
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+  symfony:
+    <<: *php
+    working_dir: /srv/parity/hosts/symfony
+    command: php -S 0.0.0.0:8000 -t public public/index.php
+    environment:
+      <<: *env
+      APP_ENV: prod
+      APP_DEBUG: '0'
+      APP_SECRET: parity-not-a-secret
+      DATABASE_URL: mysql://parity:parity@db:3306/parity?serverVersion=8.4.0&charset=utf8mb4
+    ports: ['${PARITY_SYMFONY_PORT:-8701}:8000']
+    depends_on: {db: {condition: service_healthy}}
+    healthcheck: &web-health
+      test: ['CMD-SHELL', 'curl -fsS -o /dev/null http://127.0.0.1:8000/aliases']
+      interval: 2s
+      timeout: 10s
+      retries: 30
+
+  laravel:
+    <<: *php
+    working_dir: /srv/parity/hosts/laravel
+    command: php -S 0.0.0.0:8000 -t public public/index.php
+    environment:
+      <<: *env
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_KEY: base64:cGFyaXR5LW5vdC1hLXNlY3JldC1wYXJpdHktbm90LWE=
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: '3306'
+      DB_DATABASE: parity
+      DB_USERNAME: parity
+      DB_PASSWORD: parity
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+    ports: ['${PARITY_LARAVEL_PORT:-8702}:8000']
+    depends_on: {db: {condition: service_healthy}}
+    healthcheck: *web-health
+
+  # The parity suite: both hosts asked over HTTP, on the compose network.
+  parity:
+    <<: *php
+    profiles: [parity]
+    working_dir: /srv/parity
+    command: php vendor/bin/phpunit
+    environment:
+      <<: *env
+      PARITY_SYMFONY: http://symfony:8000
+      PARITY_LARAVEL: http://laravel:8000
+    depends_on:
+      symfony: {condition: service_healthy}
+      laravel: {condition: service_healthy}

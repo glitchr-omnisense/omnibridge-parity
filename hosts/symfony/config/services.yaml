@@ -1,0 +1,14 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # The reference application's classes, shared with the Laravel host (../../app/src).
+    App\:
+        resource: '../../../app/src/'
+        exclude: ['../../../app/src/Entity/']
+
+    # Its actions: controllers, made by the container with their constructor's services.
+    App\Action\:
+        resource: '../../../app/src/Action/'
+        tags: ['controller.service_arguments']

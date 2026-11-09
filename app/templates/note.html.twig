@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="{{ 'notes.lang'|trans }}">
+<head><meta charset="utf-8"><title>{{ note.title }}</title></head>
+<body>
+<article>
+    <h1>{{ note.title }}</h1>
+    <p><time datetime="{{ note.publishedAt }}">{{ note.publishedAt|date('j F Y') }}</time> · {{ note.topic }}</p>
+    {{ note.body|nl2br }}
+</article>
+<p><a href="{{ path('home') }}">{{ 'notes.all'|trans }}</a></p>
+</body>
+</html>

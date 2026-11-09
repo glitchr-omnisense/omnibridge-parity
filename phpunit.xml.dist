@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The parity suite: both hosts asked over HTTP (PARITY_SYMFONY, PARITY_LARAVEL), run by compose's "parity" service. -->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         cacheResult="false"
+         colors="true"
+         failOnWarning="true"
+         failOnRisky="true"
+>
+    <testsuites>
+        <testsuite name="Parity">
+            <directory>tests/Parity</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

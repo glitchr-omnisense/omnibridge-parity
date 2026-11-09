@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="{{ 'notes.lang'|trans }}">
+<head><meta charset="utf-8"><title>{{ 'notes.title'|trans }}</title></head>
+<body>
+<h1>{{ 'notes.title'|trans }}</h1>
+<p>{{ 'notes.count'|trans({count: notes|length}) }}</p>
+<ul>
+{% for note in notes %}
+    <li><a href="{{ path('note', {slug: note.slug}) }}">{{ note.title }}</a> <small>{{ note.topic }}, {{ note.publishedAt|date('Y-m-d') }}</small></li>
+{% else %}
+    <li>{{ 'notes.empty'|trans }}</li>
+{% endfor %}
+</ul>
+<p><a href="{{ path('topic.fr', {topic: 'cuisine'}) }}">cuisine</a> · <a href="{{ path('search', {q: 'tea'}) }}">search</a></p>
+</body>
+</html>

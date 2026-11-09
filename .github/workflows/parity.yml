@@ -1,0 +1,50 @@
+# The master plan's phase 4 gate in CI: the reference application (app/) served by Symfony through omnibridge/symfony and
+# by Laravel through omnibridge/laravel, on one MySQL database built from database/schema.sql and seed.sql, and the
+# parity suite (tests/Parity) asking both the same requests. The commands are the Makefile's, as run locally.
+# Dependencies are resolved afresh from Packagist on each run (no lock): the heads of omnisense/omnibase 5.x and of the
+# bridges' 1.x as a consumer gets them, nightly as well, so that a change in any of them shows here.
+name: parity
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    name: Symfony and Laravel answer alike
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      # Dist archives from GitHub through the API: the job's own token lifts the anonymous rate limit (no secret).
+      COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ github.token }}"}}'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install both hosts and the suite
+        run: make install
+
+      - name: Start MySQL and both hosts
+        run: make up
+
+      - name: Parity suite
+        run: make parity
+
+      - name: What ran
+        if: success() || failure()
+        run: |
+          make versions | tee versions.txt
+          { echo '### What ran'; echo; echo '```'; cat versions.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: The hosts' logs
+        if: failure()
+        run: docker compose logs --no-color --tail=200
+
+      - name: Stop
+        if: always()
+        run: make down

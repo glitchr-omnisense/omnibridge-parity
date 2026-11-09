@@ -1,0 +1,22 @@
+{
+    "name": "omnibridge/parity",
+    "description": "One unchanged PHP reference application (omnisense/omnibase actions, Twig templates, a Doctrine entity) served by Symfony through omnibridge/symfony and by Laravel through omnibridge/laravel on one MySQL database, and the suite that asks both the same addresses and compares the answers: the master plan's phase 4 gate, in CI.",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.5"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Omnibridge\\Parity\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

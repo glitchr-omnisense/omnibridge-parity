@@ -1,0 +1,16 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+    http_method_override: false
+    php_errors: {log: true}
+    # The site's languages as omnibase reads them under Symfony: the default and the translator's fallbacks
+    # (omnibridge/laravel's omnibridge.locales.available: en-GB, fr-FR).
+    default_locale: en_GB
+    translator:
+        default_path: '%kernel.project_dir%/../../app/translations'
+        fallbacks: [en_GB, fr_FR]
+    session: true
+    cache:
+        # The pool omnibase's services are given (its host contract).
+        pools:
+            cache.adapter:
+                adapter: cache.adapter.filesystem
