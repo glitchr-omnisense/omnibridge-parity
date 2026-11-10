@@ -17,7 +17,7 @@ no secret.
 | `app/src/Action/` | the actions, written once: plain classes with symfony/routing's `#[Route]`, returning omnisense/omnibase's `Base\Screen\Template` or `Json` (or `null`: no such page) and taking `array $query` / `array $body` |
 | `app/src/Notes.php`, `app/src/Entity/Note.php` | the notes, read through Doctrine's `EntityManagerInterface`, which each host provides |
 | `app/templates/`, `app/translations/` | the Twig templates and the ICU catalogues, the same files on both hosts |
-| `hosts/symfony/` | the Symfony host: a micro kernel, FrameworkBundle, TwigBundle, DoctrineBundle, SecurityBundle, MonologBundle, FlysystemBundle and omnibase's `BaseBundle` (omnibridge/symfony), and the configuration omnibase needs ([what and why](docs/differences.md#what-each-host-needs)) |
+| `hosts/symfony/` | the Symfony host: a micro kernel, FrameworkBundle, TwigBundle, DoctrineBundle, SecurityBundle and omnibase's `BaseBundle` (omnibridge/symfony), and the configuration omnibase needs ([what and why](docs/differences.md#what-each-host-needs)) |
 | `hosts/laravel/` | the Laravel host: `bootstrap/app.php` (omnibridge/laravel's `Localize`), `routes/web.php` (`ActionRoutes` on the same actions), `config/omnibridge.php` |
 | `database/schema.sql`, `database/seed.sql` | the schema, as Doctrine's SchemaTool writes it, and the fixtures, loaded when MySQL's volume is new |
 | `tests/Parity/` | the suite (`ParityTest`) and the differences it allows (`differences.php`) |

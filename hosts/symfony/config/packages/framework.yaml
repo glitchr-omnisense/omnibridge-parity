@@ -8,9 +8,5 @@ framework:
     translator:
         default_path: '%kernel.project_dir%/../../app/translations'
         fallbacks: [en_GB, fr_FR]
+    # omnibase's forms and sign-in keep their CSRF tokens in the session (security.csrf.token_manager).
     session: true
-    cache:
-        # The pool omnibase's services are given (its host contract).
-        pools:
-            cache.adapter:
-                adapter: cache.adapter.filesystem

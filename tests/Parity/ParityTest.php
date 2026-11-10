@@ -81,6 +81,44 @@ final class ParityTest extends TestCase
         }
     }
 
+    /**
+     * A route the request's method does not allow (a POST-only action asked with GET, HEAD, PUT): 405 on both hosts,
+     * with the methods it allows in `Allow`, as Symfony's router and Laravel's answer it. The error page itself is
+     * each framework's ("error-pages"), so only the status and `Allow` are compared.
+     */
+    public function testAMethodTheRouteRefusesIsNotAllowedOnBoth(): void
+    {
+        foreach (['GET', 'PUT'] as $method) {
+            foreach (['symfony', 'laravel'] as $side) {
+                $answer = $this->ask($side, $method, '/preview');
+                $this->assertSame(405, $answer['status'], "$side: $method /preview");
+                $this->assertSame('POST', $answer['headers']['allow'] ?? null, "$side: $method /preview's Allow");
+            }
+        }
+    }
+
+    /**
+     * A page sent is counted in omnibase's analytics (analytics_page_view, on the one database) by both hosts, once:
+     * omnibridge/symfony's PageViewSubscriber and omnibridge/laravel's Omnibase\PageViews, once the page is sent.
+     * What is no page view - a JSON answer, a POST, a 404, a prefetch - is counted by neither.
+     */
+    public function testBothHostsCountAPageSentAndNothingElse(): void
+    {
+        $views = fn (): int => (int) (json_decode($this->ask('symfony', 'GET', '/page-views', [], null, true)['body'], true)['views'] ?? -1);
+
+        foreach (['laravel', 'symfony'] as $side) {
+            $before = $views();
+            $this->assertSame(200, $this->ask($side, 'GET', '/notes/green-tea', [], null, true)['status']);
+            $this->assertSame($before + 1, $views(), "$side counts the page it sent");
+
+            $this->ask($side, 'GET', '/notes/cafe-creme', ['Accept' => 'application/json'], null, true);
+            $this->ask($side, 'POST', '/preview', ['Content-Type' => 'application/json'], '{"title":"Not a view"}', true);
+            $this->ask($side, 'GET', '/notes/no-such-note', [], null, true);
+            $this->ask($side, 'GET', '/notes/green-tea', ['Sec-Purpose' => 'prefetch'], null, true);
+            $this->assertSame($before + 1, $views(), "$side counts no JSON answer, POST, 404 nor prefetch");
+        }
+    }
+
     /** The language follows the route's (_locale) on both hosts, and both write it back to LANG, as a site names it. */
     public function testTheLanguageIsTheRoutesAndIsKeptInLang(): void
     {

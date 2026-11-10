@@ -8,16 +8,12 @@
         "doctrine/dbal": "^4.2",
         "doctrine/doctrine-bundle": "^2.13 || ^3.0",
         "doctrine/orm": "^3.5",
-        "florianv/swap": "^4.0",
-        "league/flysystem-bundle": "^3.7",
-        "nyholm/psr7": "^1.8",
         "omnibridge/doctrine": "1.x-dev",
         "omnibridge/symfony": "1.x-dev",
         "omnibridge/twig": "1.x-dev",
         "omnisense/omnibase": "5.x-dev",
         "omnisense/omnibridge": "1.x-dev",
         "symfony/framework-bundle": "^7.4 || ^8.0",
-        "symfony/http-client": "^8.1",
         "symfony/twig-bundle": "^7.4 || ^8.0"
     },
     "autoload": {
@@ -31,7 +27,6 @@
     "config": {
         "allow-plugins": {
             "omnibridge/composer": false,
-            "php-http/discovery": true,
             "symfony/flex": false,
             "symfony/runtime": false
         },

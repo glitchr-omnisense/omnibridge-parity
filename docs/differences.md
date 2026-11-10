@@ -30,8 +30,9 @@ The requests are:
   is omnibase's `Base\Enum\CommentState` under another name);
 - a form posted and a JSON object posted (`array $body`), and nothing posted (422).
 
-Beyond those, the suite checks that both hosts answer 404 for a note, a topic or an address that does not exist, and
-that both take the route's language and write it back to `LANG` (`en-GB`, `fr-FR`).
+Beyond those, the suite checks that both hosts answer 404 for a note, a topic or an address that does not exist, 405
+with `Allow: POST` for the POST-only action asked with another method, and that both take the route's language and
+write it back to `LANG` (`en-GB`, `fr-FR`).
 
 The application code is the same on both hosts. That covers the actions in `app/src/Action`, which return omnibase's
 `Template` and `Json`, the `App\Notes` service on Doctrine's `EntityManagerInterface`, the entity, the Twig templates
@@ -73,24 +74,6 @@ host. Laravel's is `laravel_session` (encrypted), started by its `web` middlewar
 cookie `XSRF-TOKEN`. The reference application reads neither. omnibase's forms carry their own token through the
 `Tokens` contract on both hosts. `LANG`, the cookie omnibase reads, is written the same way by both.
 
-### `method-not-allowed`
-
-A POST-only action (`/preview`) asked with GET gets a 404 from Symfony and a 405 from Laravel. The 404 comes from
-omnibridge/symfony's `Routing\Matcher\AdvancedUrlMatcher::match()`: it catches every exception of Symfony's matcher,
-`MethodNotAllowedException` included, and tries the address again with a trailing slash, which then matches nothing.
-Laravel's router answers 405 with `Allow: POST`. This difference is a defect of the Symfony host. The fix, in
-omnibridge/symfony, is to rethrow the `MethodNotAllowedException` when the trailing-slash retry matches nothing. It is
-not done here, because it changes what every omnibase Symfony site answers.
-
-### `page-views`
-
-Omnibase's Symfony host counts every HTML page it sends: omnibridge/symfony's `Subscriber\PageViewSubscriber`, on
-`kernel.terminate`, writes `analytics_page_view` (and, for a visitor with the analytics cookie or a member,
-`analytics_visit` and `analytics_page_visit`). The Laravel host has no such listener and counts nothing. This is why
-`database/schema.sql` creates omnibase's analytics tables beside `note`: without them, the Symfony host fails after
-sending each page. The suite reads the count (`/page-views`) before and after a page on each host. To remove the
-difference, omnibridge/laravel would call omnibase's `Base\Service\Analytics::track()` from a terminable middleware.
-
 ### `twig-app-variable`
 
 Under Symfony, every template sees Twig's `app` variable (`app.request`, `app.user`, `app.session`), which `TwigBundle`
@@ -101,35 +84,59 @@ reference application's templates do not read `app`; they take the page's langua
 
 ## What each host needs
 
-The Laravel host needs omnibridge/laravel, omnibridge/doctrine and Doctrine, and four options in
-`config/omnibridge.php` (languages, catalogues, templates, entities).
+The Laravel host needs omnibridge/laravel, omnibridge/doctrine and Doctrine, and five options in
+`config/omnibridge.php` (languages, catalogues, templates, entities, and `omnibase` on: omnibase's services, its
+analytics among them).
 
-The Symfony host needs more. Omnibase's `BaseBundle` registers services that depend on bundles, packages and settings
-it does not require, and the container does not compile without them. Each item below was found by booting
-`hosts/symfony` with less, and nothing in the list can be left out:
+The Symfony host needs FrameworkBundle, TwigBundle and omnibase's `BaseBundle`, and beyond them only what omnibase's
+Symfony host is built on. Each item below was found by booting `hosts/symfony` with less:
 
-- SecurityBundle registered, with one firewall: `Base\Service\BaseService` reads `security.firewall.map`.
-- MonologBundle registered and configured: `Base\Service\SpamChecker` takes `monolog.http_client`.
-- Sessions on (`framework.session`): `Base\Security\Session\DynamicSessionStorageFactory` extends
-  `session.storage.factory.native`.
-- DoctrineBundle and omnibridge/doctrine, which omnibridge/symfony only suggests.
-- florianv/swap: `Omnibridge\Symfony\Omnibase\Controller\UX\AutocompleteController` takes
-  `Base\Field\Search\ExchangeRate`.
-- league/flysystem-bundle, with the six storages omnibase names (`local.cache`, `local.uploads`, `local.wysiwyg` and
-  each one's `.public`).
-- A `cache.adapter` pool: `Base\Routing\AdvancedRouter` takes it.
-- `base.yaml` with `database`, `router`, `attributes` and `twig`'s `use_custom` set, `twig.editor.storage` and
-  `uploader.storage`. Those options have no default, so leaving one out is a `TypeError` at boot (for example
-  `Base\Twig\Loader\FilesystemLoader::$useCustomLoader`), not a configuration error.
-- Empty `src/Controller`, `templates` and `translations` folders, which omnibase's Twig loader reads.
-- Omnibase's analytics tables in the database (`page-views` above).
+- SecurityBundle registered, with one firewall (`security.firewalls.main: ~`, SecurityBundle's own minimum): omnibase's
+  Symfony host is built on Symfony's security - the firewall map in its router and `Base\Service\BaseService`, the
+  token storage, the authorization checker and the CSRF token manager in its form, field and Twig services, its voters.
+  It comes with omnibridge/symfony; registering it is the host's part.
+- Sessions on (`framework.session`): omnibase's forms and sign-in keep their CSRF tokens there
+  (`security.csrf.token_manager`, which FrameworkBundle makes only with sessions or stateless token ids).
+- DoctrineBundle and omnibridge/doctrine, which omnibridge/symfony only suggests: the reference application reads its
+  notes through Doctrine's `EntityManagerInterface`. That is the application's choice, not omnibase's: on
+  omnibridge/eloquent, omnibase's host compiles without Doctrine.
+- Omnibase's analytics tables in the database, beside `note`: both hosts count the pages they send there
+  (`testBothHostsCountAPageSentAndNothingElse`). Without them, each host reports the failed write after sending the page.
 
-SecurityBundle and MonologBundle come with omnibridge/symfony; registering them is the host's part. None of these
-items changes what the pages answer, which is why they are listed here and not in `differences.php`. They are what a
-Symfony site pays for omnibase's full host, where a Laravel site takes only the contracts. Making those services
-optional (each wired only when its package is installed, each option with a default) belongs to omnibridge/symfony.
+None of these items changes what the pages answer, which is why they are listed here and not in `differences.php`.
+
+The host needs no longer (each a commit of omnibridge/symfony or omnisense/omnibase; with older ones, `hosts/symfony`
+does not boot):
+
+- MonologBundle: `Base\Service\SpamChecker` took `monolog.http_client`; it makes the same client itself where
+  MonologBundle is not there. symfony/monolog-bundle is a suggestion of omnibridge/symfony.
+- florianv/swap, symfony/http-client and a PSR-7 implementation: `Controller\UX\AutocompleteController` took the
+  exchange rates' service, which the core declares only with symfony/http-client; without it the forex route answers
+  404.
+- league/flysystem-bundle and its six storages: omnibridge/symfony registers the local storages the core declares
+  (`local.cache`, `local.uploads`, `local.wysiwyg` and each one's `.public`) where the application names none.
+- A `cache.adapter` pool: omnibridge/symfony makes one on the application's default adapter where it configures none.
+- `base.yaml`: the storages default to the ones the core declares (`local.uploads`, `local.wysiwyg`), and the
+  `use_custom` switches left unset are off, as their readers take them (it was a `TypeError` at boot, in
+  `Base\Twig\Loader\FilesystemLoader::$useCustomLoader`).
+- Empty `src/Controller`, `templates` and `translations` folders: omnibase's Twig loader reads the ones there are.
 
 ## Found and fixed while writing the suite
+
+- **Page views on Laravel** (omnibridge/laravel, *Added: the pages sent counted in omnibase's analytics, as under
+  Symfony*). The Symfony host counted every HTML page it sent (omnibridge/symfony's `PageViewSubscriber`, on
+  `kernel.terminate`), the Laravel host none. omnibridge/laravel's terminable middleware `Omnibase\PageViews` now gives
+  the same pages to `Base\Service\Analytics::track()`, on Doctrine's repositories or omnibridge/eloquent's. This was
+  the difference `page-views`; with an omnibridge/laravel older than that commit, the suite fails on
+  `testBothHostsCountAPageSentAndNothingElse`.
+
+- **A method the route does not allow** (omnibridge/symfony, *Fixed: 405 Method Not Allowed for a method the route does
+  not allow*). A POST-only action (`/preview`) asked with GET got a 404 from Symfony and a 405 with `Allow: POST` from
+  Laravel: omnibridge/symfony's `Routing\Matcher\AdvancedUrlMatcher::match()` caught Symfony's
+  `MethodNotAllowedException` and retried the address with a trailing slash, which then matched nothing. It now
+  rethrows it when that retry finds nothing, so Symfony's router listener answers 405 with `Allow`. This was the
+  difference `method-not-allowed`; with an omnibridge/symfony older than that commit, the suite fails on
+  `testAMethodTheRouteRefusesIsNotAllowedOnBoth`.
 
 - **Base/App precedence on Laravel** (omnibridge/laravel, *Fixed: omnibase's App\ classes from the start on Laravel*).
   `App\Enum\CommentState` was `null` on Laravel for a request that read no entity, because the convention was only

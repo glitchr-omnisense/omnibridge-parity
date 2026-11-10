@@ -43,25 +43,6 @@ return [
                 && ($s['cookies']['LANG'] ?? null) === ($l['cookies']['LANG'] ?? null);
         },
     ],
-    'method-not-allowed' => [
-        'what' => "A POST-only action asked with GET: 404 under omnibase's Symfony router, 405 under Laravel's.",
-        'check' => static function (callable $ask): bool {
-            return 404 === $ask('symfony', 'GET', '/preview')['status'] && 405 === $ask('laravel', 'GET', '/preview')['status'];
-        },
-    ],
-    'page-views' => [
-        'what' => "A page sent is counted in omnibase's analytics_page_view by the Symfony host (omnibridge/symfony's PageViewSubscriber), not by the Laravel host.",
-        'check' => static function (callable $ask): bool {
-            $views = static fn (): int => (int) (json_decode($ask('symfony', 'GET', '/page-views')['body'], true)['views'] ?? -1);
-            $before = $views();
-            $ask('laravel', 'GET', '/');
-            $afterLaravel = $views();
-            $ask('symfony', 'GET', '/');
-            $afterSymfony = $views();
-
-            return $before === $afterLaravel && $afterSymfony === $afterLaravel + 1;
-        },
-    ],
     'twig-app-variable' => [
         'what' => "Twig's `app` variable (app.request, app.user, app.session): there under Symfony (TwigBundle), not in omnibridge/laravel's default rendering.",
         'check' => static function (callable $ask): bool {

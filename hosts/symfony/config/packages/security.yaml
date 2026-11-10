@@ -1,8 +1,6 @@
-# No account: the reference application's pages are public. One firewall, as omnibase's services read it.
+# No account: the reference application's pages are public. SecurityBundle asks for a configuration, and omnibase's
+# Symfony host is built on Symfony's security (the firewall map, the token storage, the authorization checker): one
+# firewall, nothing else.
 security:
-    providers:
-        nobody: {memory: {users: []}}
     firewalls:
-        main:
-            lazy: true
-            provider: nobody
+        main: ~

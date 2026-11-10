@@ -15,6 +15,9 @@ return [
         'cache' => false,
         'timezone' => 'UTC',
     ],
+    // omnibase on (its services, its entities' mapping beside the application's): the pages sent are counted in its
+    // analytics, as omnibase's Symfony host counts them (omnibridge/laravel's Omnibase\PageViews).
+    'omnibase' => true,
     'doctrine' => [
         'connection' => 'mysql',
         'entities' => [base_path('../../app/src/Entity')],

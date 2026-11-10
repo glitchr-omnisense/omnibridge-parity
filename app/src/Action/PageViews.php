@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * The page views omnibase counted (its analytics_page_view table), all pages and sources: the parity suite reads it
- * to show that one host counts them and the other does not (tests/Parity/differences.php, "page-views").
+ * to show that both hosts count a page they send, once, and nothing else (ParityTest::testBothHostsCountAPageSentAndNothingElse).
  */
 #[Route('/page-views', name: 'page_views')]
 final class PageViews
