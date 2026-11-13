@@ -4,7 +4,7 @@ COMPOSER := composer update --no-interaction --no-progress --prefer-dist
 
 .PHONY: install up parity versions down ci
 
-## Each host's dependencies and the suite's, resolved afresh as a consumer gets them (no lock is committed)
+## Each host's dependencies and the suite's, resolved afresh from Packagist (no lock is committed): the development heads, not the tagged releases
 install:
 	$(COMPOSE) build symfony
 	$(COMPOSE) run --rm --no-deps -T symfony $(COMPOSER)

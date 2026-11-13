@@ -10,6 +10,9 @@ The same proof exists on a real site, a private pilot site with its Laravel twin
 cannot run in a public CI. This repository is the self-contained version: invented fixtures, public packages only,
 no secret.
 
+This repository is a test tool, not a package: it is not on Packagist, has no tag and no release, and nothing
+installs it with `composer require`. Its `composer.json` (type `project`) only installs the suite's PHPUnit.
+
 ## Layout
 
 | Path | What it is |
@@ -36,8 +39,10 @@ make down      # everything stopped, the database's volume removed
 ```
 
 `make ci` runs install, up, parity and versions, which is what `.github/workflows/parity.yml` runs on every push,
-every pull request and nightly. Dependencies come from Packagist each time, at the heads of omnisense/omnibase 5.x and
-the bridges' 1.x, so a change in any of them shows here the night after Packagist serves it.
+every pull request and nightly. Dependencies come from Packagist each time, at the development heads of
+omnisense/omnibase 5.x and the bridges' 1.x (each host asks `5.x-dev` / `1.x-dev` with `minimum-stability: dev`), so a
+change in any of them shows here the night after Packagist serves it. A green run says the heads agree; it does not
+test the tagged releases a project with Composer's default stability installs.
 
 The PHP image is glitchr-studio/ci's `ghcr.io/glitchr-studio/php:8.4` with `pdo_mysql` added (`docker/Dockerfile`).
 

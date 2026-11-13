@@ -1,8 +1,9 @@
 # The master plan's phase 4 gate in CI: the reference application (app/) served by Symfony through omnibridge/symfony and
 # by Laravel through omnibridge/laravel, on one MySQL database built from database/schema.sql and seed.sql, and the
 # parity suite (tests/Parity) asking both the same requests. The commands are the Makefile's, as run locally.
-# Dependencies are resolved afresh from Packagist on each run (no lock): the heads of omnisense/omnibase 5.x and of the
-# bridges' 1.x as a consumer gets them, nightly as well, so that a change in any of them shows here.
+# Dependencies are resolved afresh from Packagist on each run (no lock): the development heads of omnisense/omnibase 5.x
+# and of the bridges' 1.x (each host's composer.json asks 5.x-dev / 1.x-dev, minimum-stability dev), not the tagged
+# releases a stable consumer installs; nightly as well, so that a change in any of them shows here.
 name: parity
 
 on:
