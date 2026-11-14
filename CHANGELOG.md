@@ -26,8 +26,9 @@ change by change.
   (the search filters the notes read by title in PHP), the page counter through `Base\Repository\Analytics\PageViews`,
   instead of Doctrine's `EntityManagerInterface` and DBAL.
 - The differences between the hosts are checked between every Symfony cell and every Laravel cell.
-- The Symfony host keeps one container per persistence (`Kernel::getCacheDir()`); the Laravel host's
-  `omnibase.project_dir` is `app/`, where omnibridge/eloquent finds the entity (docs/differences.md).
+- The Symfony host keeps one container per persistence (`Kernel::getCacheDir()`).
+- omnibridge/laravel `^1.1.1`: its Eloquent persistence reads the entity folders of `omnibridge.doctrine.entities`, so
+  the Laravel host no longer sets `omnibase.project_dir` to `app/` for the Laravel/Eloquent cell.
 
 ## 2026-11-09
 

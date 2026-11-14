@@ -67,7 +67,7 @@ make down      # everything stopped, the database's volume removed
 `make ci` runs install, up, parity and versions, which is what `.github/workflows/parity.yml` runs. Dependencies come
 from Packagist each time, at the stable releases each host's carets allow, with Composer's default stability: what a
 project installs with `composer require` (omnisense/omnibase `^5.1.1`, omnisense/omnibridge `^1.0.1`,
-omnibridge/symfony `^1.1.1`, omnibridge/laravel `^1.1`, omnibridge/doctrine `^1.0.1`, omnibridge/eloquent `^1.0`,
+omnibridge/symfony `^1.1.1`, omnibridge/laravel `^1.1.1`, omnibridge/doctrine `^1.0.1`, omnibridge/eloquent `^1.0`,
 omnibridge/twig `^1.0`). A new release of any of them shows here the night after Packagist serves it.
 
 A smaller matrix runs with `PARITY_CELLS`, the first cell named being the reference:

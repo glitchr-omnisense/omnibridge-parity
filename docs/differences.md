@@ -119,11 +119,8 @@ installed and `base.persistence` names none:
 - Symfony chooses the persistence when the container is compiled, so `hosts/symfony/src/Kernel.php` keeps one cache
   folder per persistence (`var/cache/prod-doctrine`, `var/cache/prod-eloquent`). On Eloquent, omnibridge/symfony reads
   the entities from DoctrineBundle's mapping (`config/packages/doctrine.yaml`) and shares DoctrineBundle's PDO.
-- Laravel on Eloquent describes the entities of omnibase's `project_dir` (`src/Entity`) and the core's, not the folders
-  of `omnibridge.doctrine.entities`, which only the Doctrine entity manager maps (omnibridge/laravel 1.1.0,
-  `Persistence::register()`). The reference application's entity is in `app/src/Entity`, so `config/omnibridge.php`
-  sets `omnibase.project_dir` to `app/`; with only `doctrine.entities`, the Laravel/Eloquent cell answers 500
-  (`App\Entity\Note is no entity of the description`). Symfony on Eloquent has no such option to set.
+- Laravel reads the entities from `omnibridge.doctrine.entities` on both persistences: omnibridge/laravel 1.1.1's
+  Eloquent persistence describes the folders declared there, beside the core's.
 
 None of these items changes what the pages answer, which is why they are listed here and not in `differences.php`.
 
