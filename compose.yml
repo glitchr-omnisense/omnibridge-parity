@@ -1,9 +1,11 @@
-# The reference application under both hosts, on one MySQL database (database/schema.sql and seed.sql, loaded
-# when the volume is new), and the parity suite asking both the same addresses:
+# The reference application on the four cells of the matrix host x persistence, on one MySQL database
+# (database/schema.sql and seed.sql, loaded when the volume is new), and the parity suite asking every cell the same
+# addresses. Each host's folder installs both persistence bridges; OMNIBRIDGE_PERSISTENCE names the one a cell runs on.
 #
 #   make install   # each host's Composer install, in the php image
-#   make up        # MySQL, then the Symfony host on :8701 and the Laravel host on :8702, healthy
-#   make parity    # tests/Parity against both
+#   make up        # MySQL, then Symfony/Doctrine :8701, Laravel/Doctrine :8702, Symfony/Eloquent :8705,
+#                  # Laravel/Eloquent :8706, healthy
+#   make parity    # tests/Parity against the four
 #   make down      # everything stopped, the database's volume removed
 name: omnibridge-parity
 
@@ -35,12 +37,14 @@ services:
       timeout: 5s
       retries: 60
 
+  # Symfony on Doctrine (omnibridge/symfony, omnibridge/doctrine under DoctrineBundle).
   symfony:
     <<: *php
     working_dir: /srv/parity/hosts/symfony
     command: php -S 0.0.0.0:8000 -t public public/index.php
-    environment:
+    environment: &symfony-env
       <<: *env
+      OMNIBRIDGE_PERSISTENCE: doctrine
       APP_ENV: prod
       APP_DEBUG: '0'
       APP_SECRET: parity-not-a-secret
@@ -53,12 +57,14 @@ services:
       timeout: 10s
       retries: 30
 
+  # Laravel on Doctrine (omnibridge/laravel's entity manager on Laravel's connection).
   laravel:
     <<: *php
     working_dir: /srv/parity/hosts/laravel
     command: php -S 0.0.0.0:8000 -t public public/index.php
-    environment:
+    environment: &laravel-env
       <<: *env
+      OMNIBRIDGE_PERSISTENCE: doctrine
       APP_ENV: production
       APP_DEBUG: 'false'
       APP_KEY: base64:cGFyaXR5LW5vdC1hLXNlY3JldC1wYXJpdHktbm90LWE=
@@ -75,7 +81,33 @@ services:
     depends_on: {db: {condition: service_healthy}}
     healthcheck: *web-health
 
-  # The parity suite: both hosts asked over HTTP, on the compose network.
+  # Symfony on Eloquent (omnibridge/symfony's base.persistence eloquent, on DoctrineBundle's PDO): the same folder
+  # and vendor as `symfony`, its own container (hosts/symfony/src/Kernel.php's cache folder per persistence).
+  symfony-eloquent:
+    <<: *php
+    working_dir: /srv/parity/hosts/symfony
+    command: php -S 0.0.0.0:8000 -t public public/index.php
+    environment:
+      <<: *symfony-env
+      OMNIBRIDGE_PERSISTENCE: eloquent
+    ports: ['${PARITY_SYMFONY_ELOQUENT_PORT:-8705}:8000']
+    depends_on: {db: {condition: service_healthy}}
+    healthcheck: *web-health
+
+  # Laravel on Eloquent (omnibridge/laravel's base.persistence eloquent, on Laravel's connection): the same folder and
+  # vendor as `laravel`.
+  laravel-eloquent:
+    <<: *php
+    working_dir: /srv/parity/hosts/laravel
+    command: php -S 0.0.0.0:8000 -t public public/index.php
+    environment:
+      <<: *laravel-env
+      OMNIBRIDGE_PERSISTENCE: eloquent
+    ports: ['${PARITY_LARAVEL_ELOQUENT_PORT:-8706}:8000']
+    depends_on: {db: {condition: service_healthy}}
+    healthcheck: *web-health
+
+  # The parity suite: every cell asked over HTTP, on the compose network; the first is the reference.
   parity:
     <<: *php
     profiles: [parity]
@@ -83,8 +115,13 @@ services:
     command: php vendor/bin/phpunit
     environment:
       <<: *env
-      PARITY_SYMFONY: http://symfony:8000
-      PARITY_LARAVEL: http://laravel:8000
+      PARITY_CELLS: >-
+        symfony/doctrine=http://symfony:8000
+        laravel/doctrine=http://laravel:8000
+        symfony/eloquent=http://symfony-eloquent:8000
+        laravel/eloquent=http://laravel-eloquent:8000
     depends_on:
       symfony: {condition: service_healthy}
       laravel: {condition: service_healthy}
+      symfony-eloquent: {condition: service_healthy}
+      laravel-eloquent: {condition: service_healthy}

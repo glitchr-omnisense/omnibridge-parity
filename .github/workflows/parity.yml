@@ -1,9 +1,11 @@
-# The master plan's phase 4 gate in CI: the reference application (app/) served by Symfony through omnibridge/symfony and
-# by Laravel through omnibridge/laravel, on one MySQL database built from database/schema.sql and seed.sql, and the
-# parity suite (tests/Parity) asking both the same requests. The commands are the Makefile's, as run locally.
-# Dependencies are resolved afresh from Packagist on each run (no lock): the development heads of omnisense/omnibase 5.x
-# and of the bridges' 1.x (each host's composer.json asks 5.x-dev / 1.x-dev, minimum-stability dev), not the tagged
-# releases a stable consumer installs; nightly as well, so that a change in any of them shows here.
+# The master plan's phase 4 gate and its §10 point 6, the host/ORM matrix, in CI: the reference application (app/) on
+# four cells - Symfony through omnibridge/symfony and Laravel through omnibridge/laravel, each on omnibridge/doctrine and
+# on omnibridge/eloquent (OMNIBRIDGE_PERSISTENCE per cell, both bridges installed in each host) - on one MySQL database
+# built from database/schema.sql and seed.sql, and the parity suite (tests/Parity) asking every cell the same requests
+# and comparing each with Symfony on Doctrine. The commands are the Makefile's, as run locally.
+# Dependencies are resolved afresh from Packagist on each run (no lock): the stable releases the hosts' carets allow
+# (omnisense/omnibase ^5.1.1, the bridges ^1.x, Composer's default stability), what a consumer installs; nightly as
+# well, so that a new release of any of them shows here.
 name: parity
 
 on:
@@ -18,7 +20,7 @@ permissions:
 
 jobs:
   parity:
-    name: Symfony and Laravel answer alike
+    name: Symfony and Laravel, on Doctrine and on Eloquent, answer alike
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -27,10 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install both hosts and the suite
+      - name: Install both hosts (both persistence bridges) and the suite
         run: make install
 
-      - name: Start MySQL and both hosts
+      - name: Start MySQL and the four cells
         run: make up
 
       - name: Parity suite

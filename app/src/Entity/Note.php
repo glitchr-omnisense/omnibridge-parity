@@ -6,8 +6,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * The reference application's one entity: a note, read by its slug. Mapped with Doctrine's attributes, the same
- * class under both hosts (omnibridge/doctrine under Symfony's DoctrineBundle, omnibridge/laravel's entity manager
- * on Laravel's connection); its table is database/schema.sql's.
+ * class on every cell: omnibridge/doctrine's entity manager (DoctrineBundle's under Symfony, omnibridge/laravel's on
+ * Laravel's connection) and omnibridge/eloquent's store, which reads the same mapping through omnisense/omnibridge's
+ * schema description; its table is database/schema.sql's.
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'note')]

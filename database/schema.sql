@@ -1,6 +1,6 @@
 -- The reference application's schema, as Doctrine's SchemaTool writes it for the classes the pages reach: App\Entity\Note,
--- and omnibase's page counters (Base\Entity\Analytics\PageView, Visit, PageVisit), which omnibase's Symfony host writes once
--- a page is sent (omnibridge/symfony's PageViewSubscriber; the Laravel host has no such listener: docs/differences.md).
+-- and omnibase's page counters (Base\Entity\Analytics\PageView, Visit, PageVisit), which every cell writes once a page is
+-- sent (omnibridge/symfony's PageViewSubscriber, omnibridge/laravel's Omnibase\PageViews), on Doctrine or on Eloquent.
 -- Loaded into MySQL before either host starts: no migration, no ORM at load time.
 CREATE TABLE note (id INT AUTO_INCREMENT NOT NULL, slug VARCHAR(64) NOT NULL, title VARCHAR(255) NOT NULL, body LONGTEXT NOT NULL, topic VARCHAR(32) NOT NULL, publishedAt DATETIME NOT NULL, UNIQUE INDEX UNIQ_CFBDFA14989D9B62 (slug), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4;
 CREATE TABLE analytics_page_view (id INT AUTO_INCREMENT NOT NULL, path VARCHAR(255) NOT NULL, date DATETIME NOT NULL, views INT DEFAULT 0 NOT NULL, source VARCHAR(16) DEFAULT 'human' NOT NULL, INDEX page_view_date (date), INDEX page_view_source_date (source, date), UNIQUE INDEX page_view_path_date_source (path, date, source), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4;

@@ -2,8 +2,12 @@
 
 The master plan's phase 4 gate reads: *behavioural tests pass under both frameworks; differences documented*. This
 page is the second half. The first half is `tests/Parity/ParityTest.php`. It sends the same requests to the reference
-application under Symfony (`hosts/symfony`, omnibridge/symfony with omnibase's `BaseBundle`) and under Laravel
-(`hosts/laravel`, omnibridge/laravel), both reading one MySQL database, and fails on any difference not listed here.
+application on four cells, Symfony (`hosts/symfony`, omnibridge/symfony with omnibase's `BaseBundle`) and Laravel
+(`hosts/laravel`, omnibridge/laravel), each on omnibridge/doctrine and on omnibridge/eloquent, all reading one MySQL
+database, compares every cell with Symfony on Doctrine, and fails on any difference not listed here.
+
+The differences listed are the hosts'. Each is checked between every Symfony cell and every Laravel cell, whichever
+persistence each runs on. Between Doctrine and Eloquent under one host, no difference is listed and none is allowed.
 
 Each difference below has an id. `tests/Parity/differences.php` has an entry under the same id, with a check that the
 difference still holds. When a change removes a difference, the suite fails until its entry leaves both files, so the
@@ -11,7 +15,7 @@ list stays true.
 
 ## What is the same
 
-The suite compares, for every request in `ParityTest::requests()`:
+The suite compares, for every request in `ParityTest::requests()`, each cell's answer with the reference's:
 
 - the status;
 - the media type (`text/html`, `application/json`; the charset's spelling, `UTF-8` or `utf-8`, is not compared);
@@ -30,13 +34,17 @@ The requests are:
   is omnibase's `Base\Enum\CommentState` under another name);
 - a form posted and a JSON object posted (`array $body`), and nothing posted (422).
 
-Beyond those, the suite checks that both hosts answer 404 for a note, a topic or an address that does not exist, 405
-with `Allow: POST` for the POST-only action asked with another method, and that both take the route's language and
-write it back to `LANG` (`en-GB`, `fr-FR`).
+Beyond those, the suite checks that every cell answers 404 for a note, a topic or an address that does not exist, 405
+with `Allow: POST` for the POST-only action asked with another method, takes the route's language and writes it back to
+`LANG` (`en-GB`, `fr-FR`), counts a page it sends once in omnibase's analytics and nothing else, and runs on the
+persistence it is named after (`/persistence`).
 
-The application code is the same on both hosts. That covers the actions in `app/src/Action`, which return omnibase's
-`Template` and `Json`, the `App\Notes` service on Doctrine's `EntityManagerInterface`, the entity, the Twig templates
-and the catalogues. Only each host's own bootstrap differs: `hosts/symfony` (kernel, bundles, configuration) and
+The application code is the same on every cell. That covers the actions in `app/src/Action`, which return omnibase's
+`Template` and `Json`, the `App\Notes` service on omnibase's `Base\Database\Repository\Repositories` (each
+persistence's repositories: `findBy()`, `findOneBy()`; the search reads the notes by title and looks for the words in
+PHP, since `Entities` takes criteria of equality only), the page counter on the core's
+`Base\Repository\Analytics\PageViews`, the entity, the Twig templates and the catalogues. Nothing in `app/` asks an
+ORM. Only each host's own bootstrap differs: `hosts/symfony` (kernel, bundles, configuration) and
 `hosts/laravel` (bootstrap, routes from the same `#[Route]` attributes, `config/omnibridge.php`).
 
 ## The differences
@@ -97,11 +105,25 @@ Symfony host is built on. Each item below was found by booting `hosts/symfony` w
   It comes with omnibridge/symfony; registering it is the host's part.
 - Sessions on (`framework.session`): omnibase's forms and sign-in keep their CSRF tokens there
   (`security.csrf.token_manager`, which FrameworkBundle makes only with sessions or stateless token ids).
-- DoctrineBundle and omnibridge/doctrine, which omnibridge/symfony only suggests: the reference application reads its
-  notes through Doctrine's `EntityManagerInterface`. That is the application's choice, not omnibase's: on
-  omnibridge/eloquent, omnibase's host compiles without Doctrine.
+- DoctrineBundle and omnibridge/doctrine, which omnibridge/symfony only suggests: the Symfony/Doctrine cell's
+  persistence, and on the Symfony/Eloquent cell the entities' mapping and the PDO omnibridge/eloquent reads. That is
+  this repository's choice, to run both cells from one folder, not omnibase's: on omnibridge/eloquent alone, omnibase's
+  host compiles without Doctrine (Capsule on `DATABASE_URL`).
 - Omnibase's analytics tables in the database, beside `note`: both hosts count the pages they send there
-  (`testBothHostsCountAPageSentAndNothingElse`). Without them, each host reports the failed write after sending the page.
+  (`testEveryCellCountsAPageSentAndNothingElse`). Without them, each host reports the failed write after sending the page.
+
+For the matrix, each host's folder installs omnibridge/doctrine and omnibridge/eloquent, and each cell names its
+persistence with `OMNIBRIDGE_PERSISTENCE` (compose.yml), which omnisense/omnibridge's `Persistences` reads where both are
+installed and `base.persistence` names none:
+
+- Symfony chooses the persistence when the container is compiled, so `hosts/symfony/src/Kernel.php` keeps one cache
+  folder per persistence (`var/cache/prod-doctrine`, `var/cache/prod-eloquent`). On Eloquent, omnibridge/symfony reads
+  the entities from DoctrineBundle's mapping (`config/packages/doctrine.yaml`) and shares DoctrineBundle's PDO.
+- Laravel on Eloquent describes the entities of omnibase's `project_dir` (`src/Entity`) and the core's, not the folders
+  of `omnibridge.doctrine.entities`, which only the Doctrine entity manager maps (omnibridge/laravel 1.1.0,
+  `Persistence::register()`). The reference application's entity is in `app/src/Entity`, so `config/omnibridge.php`
+  sets `omnibase.project_dir` to `app/`; with only `doctrine.entities`, the Laravel/Eloquent cell answers 500
+  (`App\Entity\Note is no entity of the description`). Symfony on Eloquent has no such option to set.
 
 None of these items changes what the pages answer, which is why they are listed here and not in `differences.php`.
 
@@ -128,7 +150,7 @@ does not boot):
   `kernel.terminate`), the Laravel host none. omnibridge/laravel's terminable middleware `Omnibase\PageViews` now gives
   the same pages to `Base\Service\Analytics::track()`, on Doctrine's repositories or omnibridge/eloquent's. This was
   the difference `page-views`; with an omnibridge/laravel older than that commit, the suite fails on
-  `testBothHostsCountAPageSentAndNothingElse`.
+  `testEveryCellCountsAPageSentAndNothingElse`.
 
 - **A method the route does not allow** (omnibridge/symfony, *Fixed: 405 Method Not Allowed for a method the route does
   not allow*). A POST-only action (`/preview`) asked with GET got a 404 from Symfony and a 405 with `Allow: POST` from
@@ -136,7 +158,7 @@ does not boot):
   `MethodNotAllowedException` and retried the address with a trailing slash, which then matched nothing. It now
   rethrows it when that retry finds nothing, so Symfony's router listener answers 405 with `Allow`. This was the
   difference `method-not-allowed`; with an omnibridge/symfony older than that commit, the suite fails on
-  `testAMethodTheRouteRefusesIsNotAllowedOnBoth`.
+  `testAMethodTheRouteRefusesIsNotAllowedOnEveryCell`.
 
 - **Base/App precedence on Laravel** (omnibridge/laravel, *Fixed: omnibase's App\ classes from the start on Laravel*).
   `App\Enum\CommentState` was `null` on Laravel for a request that read no entity, because the convention was only
@@ -148,7 +170,8 @@ does not boot):
 - Pages behind a sign-in. The reference application has no account, so the sign-in's effects are not checked here.
   They are compared on the private pilot site and its Laravel twin, which share a database: the same pages signed in,
   an administrator's page, the sign-in's e-mails.
-- Writes through omnibase's unit of work, Eloquent as the persistence, the back office. The pilot site's suites cover
-  them under both hosts, on both persistences.
+- Writes through omnibase's unit of work and the back office. The only writes here are omnibase's page counters (the
+  native SQL of omnibridge/doctrine's analytics repository, the `#[BackendOnly]` methods written on Eloquent's
+  connection). The pilot site's suites cover the others under both hosts, on both persistences.
 - Response headers other than `Vary` and the ones above (`Date`, `X-Powered-By`, `Host`, `Connection`). They are each
   server's own.

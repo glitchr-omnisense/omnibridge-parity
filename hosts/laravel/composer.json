@@ -8,11 +8,12 @@
         "doctrine/dbal": "^4.2",
         "doctrine/orm": "^3.5",
         "laravel/framework": "^13.0",
-        "omnibridge/doctrine": "1.x-dev",
-        "omnibridge/laravel": "1.x-dev",
-        "omnibridge/twig": "1.x-dev",
-        "omnisense/omnibase": "5.x-dev",
-        "omnisense/omnibridge": "1.x-dev"
+        "omnibridge/doctrine": "^1.0.1",
+        "omnibridge/eloquent": "^1.0",
+        "omnibridge/laravel": "^1.1",
+        "omnibridge/twig": "^1.0",
+        "omnisense/omnibase": "^5.1.1",
+        "omnisense/omnibridge": "^1.0.1"
     },
     "autoload": {
         "psr-4": {
@@ -25,7 +26,5 @@
             "php-http/discovery": true
         },
         "sort-packages": true
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    }
 }
