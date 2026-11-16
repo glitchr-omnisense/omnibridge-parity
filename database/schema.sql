@@ -1,8 +1,14 @@
--- The reference application's schema, as Doctrine's SchemaTool writes it for the classes the pages reach: App\Entity\Note,
--- and omnibase's page counters (Base\Entity\Analytics\PageView, Visit, PageVisit), which every cell writes once a page is
--- sent (omnibridge/symfony's PageViewSubscriber, omnibridge/laravel's Omnibase\PageViews), on Doctrine or on Eloquent.
+-- The reference application's schema, in the shape Doctrine's SchemaTool writes it, for the classes the pages reach:
+-- App\Entity\Author, Note and Comment (the repositories suite's), and omnibase's page counters
+-- (Base\Entity\Analytics\PageView, Visit, PageVisit), which every cell writes once a page is sent (omnibridge/symfony's
+-- PageViewSubscriber, omnibridge/laravel's page views), on Doctrine or on Eloquent.
 -- Loaded into MySQL before either host starts: no migration, no ORM at load time.
-CREATE TABLE note (id INT AUTO_INCREMENT NOT NULL, slug VARCHAR(64) NOT NULL, title VARCHAR(255) NOT NULL, body LONGTEXT NOT NULL, topic VARCHAR(32) NOT NULL, publishedAt DATETIME NOT NULL, UNIQUE INDEX UNIQ_CFBDFA14989D9B62 (slug), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4;
+CREATE TABLE author (id INT AUTO_INCREMENT NOT NULL, handle VARCHAR(32) NOT NULL, name VARCHAR(64) NOT NULL, email VARCHAR(128) DEFAULT NULL, UNIQUE INDEX UNIQ_BDAFD8C8918020D9 (handle), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4;
+CREATE TABLE note (id INT AUTO_INCREMENT NOT NULL, slug VARCHAR(64) NOT NULL, title VARCHAR(255) NOT NULL, body LONGTEXT NOT NULL, topic VARCHAR(32) NOT NULL, publishedAt DATETIME NOT NULL, author_id INT DEFAULT NULL, UNIQUE INDEX UNIQ_CFBDFA14989D9B62 (slug), INDEX IDX_CFBDFA14F675F31B (author_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4;
+CREATE TABLE comment (id INT AUTO_INCREMENT NOT NULL, code VARCHAR(32) NOT NULL, body LONGTEXT NOT NULL, rating INT DEFAULT NULL, state VARCHAR(16) NOT NULL, stamp VARCHAR(64) DEFAULT NULL, createdAt DATETIME NOT NULL, note_id INT NOT NULL, author_id INT DEFAULT NULL, UNIQUE INDEX UNIQ_9474526C77153098 (code), INDEX IDX_9474526C26ED0855 (note_id), INDEX IDX_9474526CF675F31B (author_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4;
 CREATE TABLE analytics_page_view (id INT AUTO_INCREMENT NOT NULL, path VARCHAR(255) NOT NULL, date DATETIME NOT NULL, views INT DEFAULT 0 NOT NULL, source VARCHAR(16) DEFAULT 'human' NOT NULL, INDEX page_view_date (date), INDEX page_view_source_date (source, date), UNIQUE INDEX page_view_path_date_source (path, date, source), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4;
 CREATE TABLE analytics_visit (id INT AUTO_INCREMENT NOT NULL, date DATETIME NOT NULL, subject_type VARCHAR(16) NOT NULL, subject_id VARCHAR(64) NOT NULL, INDEX visit_type_date (subject_type, date), UNIQUE INDEX visit_subject_date (date, subject_type, subject_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4;
 CREATE TABLE analytics_page_visit (id INT AUTO_INCREMENT NOT NULL, date DATETIME NOT NULL, path VARCHAR(255) NOT NULL, subject_type VARCHAR(16) NOT NULL, subject_id VARCHAR(64) NOT NULL, INDEX page_visit_date (date), UNIQUE INDEX page_visit_subject (date, path, subject_type, subject_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4;
+ALTER TABLE note ADD CONSTRAINT FK_CFBDFA14F675F31B FOREIGN KEY (author_id) REFERENCES author (id);
+ALTER TABLE comment ADD CONSTRAINT FK_9474526C26ED0855 FOREIGN KEY (note_id) REFERENCES note (id);
+ALTER TABLE comment ADD CONSTRAINT FK_9474526CF675F31B FOREIGN KEY (author_id) REFERENCES author (id);

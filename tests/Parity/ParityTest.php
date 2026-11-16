@@ -117,8 +117,7 @@ final class ParityTest extends TestCase
     /**
      * A page sent is counted in omnibase's analytics (analytics_page_view, on the one database) by every cell, once:
      * omnibridge/symfony's PageViewSubscriber and omnibridge/laravel's Omnibase\PageViews, once the page is sent,
-     * through the persistence's own analytics repository (the native SQL of omnibridge/doctrine's, the #[BackendOnly]
-     * methods written on Eloquent's connection). What is no page view - a JSON answer, a POST, a 404, a prefetch - is
+     * through the core's analytics repository (written once in the core's language, the same on every persistence). What is no page view - a JSON answer, a POST, a 404, a prefetch - is
      * counted by none. The count is read on the reference cell.
      */
     public function testEveryCellCountsAPageSentAndNothingElse(): void

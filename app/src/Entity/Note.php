@@ -2,15 +2,17 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\NoteRepository;
+use Base\Mapping as ORM;
 
 /**
- * The reference application's one entity: a note, read by its slug. Mapped with Doctrine's attributes, the same
+ * The reference application's notes, each read by its slug. Mapped with omnibase's attributes (Base\Mapping), the same
  * class on every cell: omnibridge/doctrine's entity manager (DoctrineBundle's under Symfony, omnibridge/laravel's on
  * Laravel's connection) and omnibridge/eloquent's store, which reads the same mapping through omnisense/omnibridge's
- * schema description; its table is database/schema.sql's.
+ * schema description; its table is database/schema.sql's. Its repository, App\Repository\NoteRepository, is
+ * omnibase's agnostic ServiceEntityRepository: the same class on every cell. Its author may be missing (null).
  */
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: NoteRepository::class)]
 #[ORM\Table(name: 'note')]
 class Note
 {
@@ -31,6 +33,10 @@ class Note
 
     #[ORM\Column(name: 'publishedAt')]
     public \DateTimeImmutable $publishedAt;
+
+    #[ORM\ManyToOne(targetEntity: Author::class)]
+    #[ORM\JoinColumn(name: 'author_id', referencedColumnName: 'id', nullable: true)]
+    public ?Author $author = null;
 
     /** @return array{slug: string, title: string, topic: string, publishedAt: string} */
     public function card(): array

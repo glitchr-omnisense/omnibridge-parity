@@ -1,35 +1,22 @@
 # Changelog
 
-This repository is a test tool (type `project`, not on Packagist, not tagged): this file records what its CI proves,
-change by change.
+This repository is a test tool (type `project`, not on Packagist, not tagged): this file says what its CI proves.
 
 ## Unreleased
 
-### Added
+One reference application (`app/`: actions, entities, repositories, templates, catalogues) served by Symfony through
+omnibridge/symfony and by Laravel through omnibridge/laravel, each persisted through omnibridge/doctrine and through
+omnibridge/eloquent, on one MySQL database, written only with omnibase's `Base\` names and its own `App\` ones.
 
-- The host/ORM matrix (master plan §10, point 6): four cells - Symfony and Laravel, each on omnibridge/doctrine and on
-  omnibridge/eloquent - in one run of `.github/workflows/parity.yml`, every cell asked the same requests and compared
-  with Symfony on Doctrine (`ParityTest::testEveryCellAnswersAsTheReference`), with the same 404, 405, page-count and
-  language checks on each. `compose.yml`'s `symfony-eloquent` (:8705) and `laravel-eloquent` (:8706) beside `symfony`
-  and `laravel`, `OMNIBRIDGE_PERSISTENCE` per cell, both bridges installed in each host.
-- `/persistence` (`App\Action\Persistence`, omnisense/omnibridge's `Backend::name()`) and
-  `ParityTest::testEveryCellRunsOnItsPersistence`: a cell that fell back to the other bridge fails.
-- `PARITY_CELLS` (`make parity PARITY_CELLS="..."`) for a smaller matrix; `make versions` prints each cell's persistence.
-
-### Changed
-
-- The hosts require the stable releases a consumer installs, with Composer's default stability: omnisense/omnibase
-  `^5.1.1`, omnisense/omnibridge `^1.0.1`, omnibridge/symfony `^1.1.1`, omnibridge/laravel `^1.1`, omnibridge/doctrine
-  `^1.0.1`, omnibridge/eloquent `^1.0`, omnibridge/twig `^1.0`, instead of the 5.x-dev / 1.x-dev heads with
-  `minimum-stability: dev`.
-- The reference application asks no ORM: `App\Notes` reads through omnibase's `Base\Database\Repository\Repositories`
-  (the search filters the notes read by title in PHP), the page counter through `Base\Repository\Analytics\PageViews`,
-  instead of Doctrine's `EntityManagerInterface` and DBAL.
-- The differences between the hosts are checked between every Symfony cell and every Laravel cell.
-- The Symfony host keeps one container per persistence (`Kernel::getCacheDir()`).
-- omnibridge/laravel `^1.1.1`: its Eloquent persistence reads the entity folders of `omnibridge.doctrine.entities`, so
-  the Laravel host no longer sets `omnibase.project_dir` to `app/` for the Laravel/Eloquent cell.
-
-## 2026-11-09
-
-- First version (29d7731, df57eb2): Symfony and Laravel on Doctrine, the development heads, 23 requests compared and the documented differences.
+- The host/ORM matrix: four cells in one run of `.github/workflows/parity.yml`, every cell asked the same requests and
+  compared with Symfony on Doctrine (`ParityTest`), with the same 404, 405, page-count, language and persistence checks
+  on each, and the documented differences between the hosts checked between every Symfony cell and every Laravel cell.
+- The repositories cell (`RepositoriesTest`, `make repositories`): `App\Repository\NoteRepository` and
+  `CommentRepository` on omnibase's agnostic `Base\Database\Repository\ServiceEntityRepository`, asked the same cases on
+  the four cells (finds, orders and pages, lists, counts, the finder language, criteria groups, paths through one and
+  two associations, `null` and `[]` criteria, `findValuesBy()` with an aggregate (`CommentRepository::countPerNote()`),
+  `Repositories::of()`, each case written once and compiled by omnibridge/doctrine and omnibridge/eloquent), and a
+  listener of the neutral lifecycle events (`App\EntitySubscriber\CommentLifecycle`)
+  hearing the same moments on each.
+- The hosts require omnisense/omnibase, omnisense/omnibridge and the bridges at `^1.0`; `make ensemble` runs the same
+  on local checkouts (path repositories in a `composer.ensemble.json` per host, never committed; `compose.ensemble.yml`).

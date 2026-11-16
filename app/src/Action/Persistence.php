@@ -2,12 +2,12 @@
 
 namespace App\Action;
 
+use Base\Contract\Backend;
 use Base\Screen\Json;
-use Omnibridge\Persistence\Backend;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * The persistence this host runs on (omnisense/omnibridge's Backend: "doctrine", "eloquent"), so that the parity suite
+ * The persistence this host runs on (omnibase's Base\Contract\Backend: "doctrine", "eloquent"), so that the parity suite
  * knows each cell of the matrix is the one it claims (ParityTest::testEveryCellRunsOnItsPersistence). Not compared
  * between cells: it is what tells them apart.
  */

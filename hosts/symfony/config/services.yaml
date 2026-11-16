@@ -3,12 +3,19 @@ services:
         autowire: true
         autoconfigure: true
 
-    # The reference application's classes, shared with the Laravel host (../../app/src).
+    # The reference application's classes, shared with the Laravel host (../../app/src): its repositories
+    # (App\Repository, omnibase's agnostic ServiceEntityRepository, given the persistence's Finders) among them. Its
+    # entities are no services, nor its statements (App\Persistence\<persistence>\*: the persistence's bridge builds
+    # them).
     App\:
         resource: '../../../app/src/'
-        exclude: ['../../../app/src/Entity/']
+        exclude: ['../../../app/src/Entity/', '../../../app/src/Persistence/']
 
     # Its actions: controllers, made by the container with their constructor's services.
     App\Action\:
         resource: '../../../app/src/Action/'
         tags: ['controller.service_arguments']
+
+    # Its listener of omnibase's neutral lifecycle events (App\EntitySubscriber\CommentLifecycle) needs no tag: an
+    # invokable of src/EntitySubscriber is one by the layout, on either host (omnibridge/symfony's
+    # LifecycleListenersPass, omnibridge/laravel's OmnibaseServices).

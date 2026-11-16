@@ -5,6 +5,6 @@ return [
     Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
     Doctrine\Bundle\DoctrineBundle\DoctrineBundle::class => ['all' => true],
     Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],
-    // omnibase's bundle, omnibridge/symfony's since 5.0: its actions' results, arguments and routes.
-    Omnibridge\Symfony\Omnibase\BaseBundle::class => ['all' => true],
+    // omnibase's bundle (provided by omnibridge/symfony): its actions' results, arguments and routes.
+    Base\BaseBundle::class => ['all' => true],
 ];

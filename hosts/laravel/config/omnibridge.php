@@ -16,8 +16,10 @@ return [
         'timezone' => 'UTC',
     ],
     // omnibase on (its services, its entities' mapping beside the application's): the pages sent are counted in its
-    // analytics, as omnibase's Symfony host counts them (omnibridge/laravel's Omnibase\PageViews).
-    'omnibase' => true,
+    // analytics, as omnibase's Symfony host counts them. Its project is ../../app, the tree both hosts share: the
+    // application's src/ (App\Entity, App\Repository, App\EntitySubscriber...) is read there, as Symfony's
+    // services.yaml reads it.
+    'omnibase' => ['project_dir' => base_path('../../app')],
     'doctrine' => [
         'connection' => 'mysql',
         'entities' => [base_path('../../app/src/Entity')],

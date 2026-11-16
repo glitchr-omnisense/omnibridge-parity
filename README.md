@@ -24,9 +24,17 @@ one run and the same suite against each:
 For every cell, the same assertions: each request of `ParityTest::requests()` answered with the reference's status,
 media type, `Vary` and body; 404 for what does not exist; 405 with `Allow` for a refused method; a page sent counted
 once in omnibase's analytics and nothing else; the route's language kept in `LANG`; and the cell on the persistence it
-is named after (`/persistence`, omnisense/omnibridge's `Backend::name()`). The differences between the two hosts
+is named after (`/persistence`, omnibase's `Base\Contract\Backend::name()`). The differences between the two hosts
 (`docs/differences.md`) are checked between every Symfony cell and every Laravel cell; between the two persistences of
 one host, none is allowed.
+
+The repositories cell (`tests/Repositories`, step "Repositories cell") asks the application's repositories - the same
+`App\Repository` classes on omnibase's agnostic `ServiceEntityRepository` everywhere - the same cases on the four
+cells: plain finds, orders, limits and offsets, lists, counts, the finder language, criteria groups, pages, paths
+through one association and through two, `null` and `[]` criteria, a GROUP BY written once
+(`findValuesBy()`), `Repositories::of()`, and a comment written, changed, read and removed while the application's
+listener of omnibase's neutral lifecycle events records what it hears. Every cell answers as the reference, and the
+reference as `database/seed.sql` says.
 
 Each host's folder installs both persistence bridges, and `OMNIBRIDGE_PERSISTENCE` (compose.yml) names the one a cell
 runs on, as omnisense/omnibridge's `Persistences` reads it when both are installed and the host's option names none.
@@ -44,12 +52,15 @@ installs it with `composer require`. Its `composer.json` (type `project`) only i
 | Path | What it is |
 |---|---|
 | `app/src/Action/` | the actions, written once: plain classes with symfony/routing's `#[Route]`, returning omnisense/omnibase's `Base\Screen\Template` or `Json` (or `null`: no such page) and taking `array $query` / `array $body` |
-| `app/src/Notes.php`, `app/src/Entity/Note.php` | the notes, read through omnibase's `Base\Database\Repository\Repositories`, which each persistence answers (the entity is mapped with Doctrine's attributes, which omnibridge/eloquent reads through omnisense/omnibridge's schema description) |
+| `app/src/Entity/` | the notes, their authors and comments, mapped with omnibase's attributes (`Base\Mapping`, the names and parameters of Doctrine's), which omnibridge/doctrine and omnibridge/eloquent both read |
+| `app/src/Repository/` | `NoteRepository`, `CommentRepository`: omnibase's agnostic `Base\Database\Repository\ServiceEntityRepository`, the same classes on every cell |
+| `app/src/EntitySubscriber/` | a listener of omnibase's neutral lifecycle events (`Base\Contract\Lifecycle\*`), tagged `omnibridge.lifecycle_listener` by each host |
 | `app/templates/`, `app/translations/` | the Twig templates and the ICU catalogues, the same files on both hosts |
 | `hosts/symfony/` | the Symfony host: a micro kernel, FrameworkBundle, TwigBundle, DoctrineBundle, SecurityBundle and omnibase's `BaseBundle` (omnibridge/symfony), and the configuration omnibase needs ([what and why](docs/differences.md#what-each-host-needs)); both persistence bridges |
 | `hosts/laravel/` | the Laravel host: `bootstrap/app.php` (omnibridge/laravel's `Localize`), `routes/web.php` (`ActionRoutes` on the same actions), `config/omnibridge.php`; both persistence bridges |
 | `database/schema.sql`, `database/seed.sql` | the schema, as Doctrine's SchemaTool writes it, and the fixtures, loaded when MySQL's volume is new |
 | `tests/Parity/` | the suite (`ParityTest`, its cells from `PARITY_CELLS`) and the differences it allows (`differences.php`) |
+| `tests/Repositories/` | the repositories cell (`RepositoriesTest`): the application's repositories and lifecycle listener asked the same cases on every cell, the reference's answers checked against the seed |
 | `docs/differences.md` | what differs between the two hosts and why: the gate's "differences documented" |
 
 ## Run it
@@ -60,15 +71,20 @@ Only Docker is needed:
 make install   # each host's dependencies and the suite's, resolved afresh (no lock is committed)
 make up        # MySQL, then the four cells (:8701, :8702, :8705, :8706), until each is healthy
 make parity    # the suite against the four
+make repositories  # the repositories cell against the four
 make versions  # what ran: omnisense/omnibase and the bridges, and the persistence of each cell
 make down      # everything stopped, the database's volume removed
 ```
 
-`make ci` runs install, up, parity and versions, which is what `.github/workflows/parity.yml` runs. Dependencies come
+`make ci` runs install, up, parity, repositories and versions, which is what `.github/workflows/parity.yml` runs. Dependencies come
 from Packagist each time, at the stable releases each host's carets allow, with Composer's default stability: what a
-project installs with `composer require` (omnisense/omnibase `^5.1.1`, omnisense/omnibridge `^1.0.1`,
-omnibridge/symfony `^1.1.1`, omnibridge/laravel `^1.1.1`, omnibridge/doctrine `^1.0.1`, omnibridge/eloquent `^1.0`,
-omnibridge/twig `^1.0`). A new release of any of them shows here the night after Packagist serves it.
+project installs with `composer require` (omnisense/omnibase, omnisense/omnibridge and the bridges omnibridge/symfony,
+laravel, doctrine, eloquent and twig, each `^1.0`).
+
+`make ensemble ENSEMBLE_ROOT=<folder>` runs the same on packages checked out locally (a folder holding `omnibase/` and
+`omnibridge/`, this checkout as its `omnibridge/parity`): each host gets a `composer.ensemble.json`, never committed,
+resolving omnisense/* and omnibridge/* by path repositories, and `compose.ensemble.yml` mounts the folder in every
+container; the database is new. A new release of any of them shows here the night after Packagist serves it.
 
 A smaller matrix runs with `PARITY_CELLS`, the first cell named being the reference:
 

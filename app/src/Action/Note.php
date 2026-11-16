@@ -2,7 +2,7 @@
 
 namespace App\Action;
 
-use App\Notes;
+use App\Repository\NoteRepository;
 use Base\Screen\Template;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -10,13 +10,13 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/notes/{slug}', name: 'note', requirements: ['slug' => '[a-z0-9-]+'])]
 final class Note
 {
-    public function __construct(private readonly Notes $notes)
+    public function __construct(private readonly NoteRepository $notes)
     {
     }
 
     public function __invoke(string $slug): ?Template
     {
-        $note = $this->notes->find($slug);
+        $note = $this->notes->oneBySlug($slug);
         if (null === $note) {
             return null;
         }

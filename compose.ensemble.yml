@@ -1,0 +1,29 @@
+# The hosts on packages checked out locally instead of Packagist's releases: each host's composer.ensemble.json
+# (written by `make ensemble`, never committed) resolves omnisense/* and omnibridge/* by path repositories, symlinked
+# into vendor/, to the checkouts under ENSEMBLE_ROOT, mounted at /ensemble so that the symlinks resolve in every
+# container. Third-party packages still come from Packagist (its European edge: PACKAGIST_EDGE).
+#
+#   make ensemble ENSEMBLE_ROOT=~/Sites/.worktrees/base-agnostic
+x-ensemble: &ensemble
+  volumes:
+    - {type: bind, source: '${ENSEMBLE_ROOT:?set ENSEMBLE_ROOT to the folder holding omnibase and omnibridge}', target: /ensemble}
+  extra_hosts:
+    - repo.packagist.org:${PACKAGIST_EDGE:-79.127.134.235}
+
+services:
+  symfony:
+    <<: *ensemble
+    working_dir: /ensemble/omnibridge/parity/hosts/symfony
+    environment: {COMPOSER: composer.ensemble.json}
+  symfony-eloquent:
+    <<: *ensemble
+    working_dir: /ensemble/omnibridge/parity/hosts/symfony
+  laravel:
+    <<: *ensemble
+    working_dir: /ensemble/omnibridge/parity/hosts/laravel
+    environment: {COMPOSER: composer.ensemble.json}
+  laravel-eloquent:
+    <<: *ensemble
+    working_dir: /ensemble/omnibridge/parity/hosts/laravel
+  parity:
+    <<: *ensemble

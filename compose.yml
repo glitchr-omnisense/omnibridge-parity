@@ -52,7 +52,8 @@ services:
     ports: ['${PARITY_SYMFONY_PORT:-8701}:8000']
     depends_on: {db: {condition: service_healthy}}
     healthcheck: &web-health
-      test: ['CMD-SHELL', 'curl -fsS -o /dev/null http://127.0.0.1:8000/aliases']
+      # The JSON of /aliases, not only a 200: PHP's built-in server answers a fatal error at boot with a 200 page.
+      test: ['CMD-SHELL', "curl -fsS http://127.0.0.1:8000/aliases | grep -q '^{\"App'"]
       interval: 2s
       timeout: 10s
       retries: 30

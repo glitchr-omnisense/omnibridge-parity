@@ -2,7 +2,7 @@
 
 namespace App\Action;
 
-use App\Notes;
+use App\Repository\NoteRepository;
 use Base\Screen\Json;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/search', name: 'search')]
 final class Search
 {
-    public function __construct(private readonly Notes $notes)
+    public function __construct(private readonly NoteRepository $notes)
     {
     }
 

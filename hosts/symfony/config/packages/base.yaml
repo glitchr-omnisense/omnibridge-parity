@@ -1,0 +1,8 @@
+# omnibase's options. The reference application has no account: no firewall is given omnibase's sign-in, user checker,
+# entry point or bearer tokens (omnibridge/symfony prepends them to the firewall named here, none with null). The
+# persistence is OMNIBRIDGE_PERSISTENCE's (compose.yml), both bridges being installed.
+base:
+    security:
+        firewall: ~
+        rescue: ~
+        access_token: false

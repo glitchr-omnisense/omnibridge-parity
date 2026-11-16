@@ -2,7 +2,7 @@
 
 namespace App\Action;
 
-use App\Notes;
+use App\Repository\NoteRepository;
 use Base\Screen\Json;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route(['en' => '/topics/{topic}', 'fr' => '/sujets/{topic}'], name: 'topic', requirements: ['topic' => '[a-z]+'])]
 final class Topic
 {
-    public function __construct(private readonly Notes $notes)
+    public function __construct(private readonly NoteRepository $notes)
     {
     }
 

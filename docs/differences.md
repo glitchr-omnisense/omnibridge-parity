@@ -40,12 +40,23 @@ with `Allow: POST` for the POST-only action asked with another method, takes the
 persistence it is named after (`/persistence`).
 
 The application code is the same on every cell. That covers the actions in `app/src/Action`, which return omnibase's
-`Template` and `Json`, the `App\Notes` service on omnibase's `Base\Database\Repository\Repositories` (each
-persistence's repositories: `findBy()`, `findOneBy()`; the search reads the notes by title and looks for the words in
-PHP, since `Entities` takes criteria of equality only), the page counter on the core's
-`Base\Repository\Analytics\PageViews`, the entity, the Twig templates and the catalogues. Nothing in `app/` asks an
-ORM. Only each host's own bootstrap differs: `hosts/symfony` (kernel, bundles, configuration) and
-`hosts/laravel` (bootstrap, routes from the same `#[Route]` attributes, `config/omnibridge.php`).
+`Template` and `Json`, the repositories in `app/src/Repository` (`App\Repository\NoteRepository`, `CommentRepository`:
+omnibase's agnostic `Base\Database\Repository\ServiceEntityRepository`, whose finder language each persistence
+compiles; the search is the language's `InsensitivePartial`), the page counter on the core's
+`Base\Repository\Analytics\PageViews`, the entities, the lifecycle listener, the Twig templates and the catalogues.
+Nothing in `app/` names an ORM (the entities are mapped with omnibase's `Base\Mapping`): every query is written once,
+in the repositories.
+Only each host's own bootstrap differs: `hosts/symfony` (kernel, bundles, configuration) and `hosts/laravel`
+(bootstrap, routes from the same `#[Route]` attributes, `config/omnibridge.php`).
+
+The repositories cell (`tests/Repositories`, `make repositories`) asks the same repositories, over HTTP
+(`/repositories/{case}`), their plain finds, orders, limits and offsets, lists, counts, the finder language, criteria
+groups, pages, paths through one association, a path through two, `null` and `[]` criteria, a statement written for
+each persistence and `Repositories::of()`, and has a comment written, changed, read and removed while the
+application's listener of omnibase's neutral lifecycle events records what it hears. Every cell answers as the
+reference does, and the reference as the seed says. The one answer allowed to differ by persistence is the path
+through two associations, which the agnostic language does not offer at 1.0: a cell answers it as the two finders do
+or refuses it aloud.
 
 ## The differences
 
@@ -86,20 +97,22 @@ cookie `XSRF-TOKEN`. The reference application reads neither. omnibase's forms c
 
 Under Symfony, every template sees Twig's `app` variable (`app.request`, `app.user`, `app.session`), which `TwigBundle`
 provides. omnibridge/laravel's default rendering (the bound `Base\Screen\Negotiation`) has no `app`. A Laravel site
-adds its own through `Omnibridge\Laravel\Page\AppVariable` in the `Negotiation` it binds. For that reason, the
+adds its own through `Base\Page\AppVariable` in the `Negotiation` it binds. For that reason, the
 reference application's templates do not read `app`; they take the page's language from the catalogue
 (`notes.lang`). `/twig-app` prints whether `app` is defined.
 
 ## What each host needs
 
 The Laravel host needs omnibridge/laravel, omnibridge/doctrine and Doctrine, and five options in
-`config/omnibridge.php` (languages, catalogues, templates, entities, and `omnibase` on: omnibase's services, its
-analytics among them).
+`config/omnibridge.php` (languages, catalogues, templates, entities, and `omnibase` with its project at `../../app`:
+omnibase's services, its analytics among them, and the application's `src/` read where the shared tree is). Its
+`bootstrap/app.php` tags the application's lifecycle listener, as the Symfony host's `services.yaml` does.
 
 The Symfony host needs FrameworkBundle, TwigBundle and omnibase's `BaseBundle`, and beyond them only what omnibase's
 Symfony host is built on. Each item below was found by booting `hosts/symfony` with less:
 
-- SecurityBundle registered, with one firewall (`security.firewalls.main: ~`, SecurityBundle's own minimum): omnibase's
+- SecurityBundle registered, with one firewall (`security.firewalls.main: ~`, SecurityBundle's own minimum), which
+  `config/packages/base.yaml` gives none of omnibase's sign-in (`base.security.firewall: ~`): omnibase's
   Symfony host is built on Symfony's security - the firewall map in its router and `Base\Service\BaseService`, the
   token storage, the authorization checker and the CSRF token manager in its form, field and Twig services, its voters.
   It comes with omnibridge/symfony; registering it is the host's part.
@@ -167,8 +180,7 @@ does not boot):
 - Pages behind a sign-in. The reference application has no account, so the sign-in's effects are not checked here.
   They are compared on the private pilot site and its Laravel twin, which share a database: the same pages signed in,
   an administrator's page, the sign-in's e-mails.
-- Writes through omnibase's unit of work and the back office. The only writes here are omnibase's page counters (the
-  native SQL of omnibridge/doctrine's analytics repository, the `#[BackendOnly]` methods written on Eloquent's
-  connection). The pilot site's suites cover the others under both hosts, on both persistences.
+- The back office, and writes beyond the repositories cell's one comment (written, changed and removed through the
+  application's repository) and omnibase's page counters (the core's analytics, written once). The pilot site's suites cover the others under both hosts, on both persistences.
 - Response headers other than `Vary` and the ones above (`Date`, `X-Powered-By`, `Host`, `Connection`). They are each
   server's own.

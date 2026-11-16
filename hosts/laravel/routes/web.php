@@ -1,6 +1,6 @@
 <?php
 
-use Omnibridge\Laravel\Routing\ActionRoutes;
+use Base\Routing\ActionRoutes;
 
 // The reference application's routes, read from its actions' #[Route] (the declaration Symfony's router reads on
 // the same classes), each answered by omnibase's Negotiation through omnibridge/laravel's Screen\Responder.
