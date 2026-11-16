@@ -79,7 +79,8 @@ make down      # everything stopped, the database's volume removed
 `make ci` runs install, up, parity, repositories and versions, which is what `.github/workflows/parity.yml` runs. Dependencies come
 from Packagist each time, at the stable releases each host's carets allow, with Composer's default stability: what a
 project installs with `composer require` (omnisense/omnibase, omnisense/omnibridge and the bridges omnibridge/symfony,
-laravel, doctrine, eloquent and twig, each `^1.0`).
+laravel, doctrine, eloquent and twig, each at its new major: `^7.0` for omnisense/omnibase, `^3.0` for omnibridge/symfony and
+omnibridge/doctrine, `^2.0` for the others).
 
 `make ensemble ENSEMBLE_ROOT=<folder>` runs the same on packages checked out locally (a folder holding `omnibase/` and
 `omnibridge/`, this checkout as its `omnibridge/parity`): each host gets a `composer.ensemble.json`, never committed,

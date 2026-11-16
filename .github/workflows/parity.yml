@@ -4,7 +4,7 @@
 # built from database/schema.sql and seed.sql, and the parity suite (tests/Parity) asking every cell the same requests
 # and comparing each with Symfony on Doctrine. The commands are the Makefile's, as run locally.
 # Dependencies are resolved afresh from Packagist on each run (no lock): the stable releases the hosts' carets allow
-# (omnisense/omnibase and the bridges ^1.0, Composer's default stability), what a consumer installs; nightly as
+# (omnisense/omnibase ^7.0, omnisense/omnibridge and the bridges at their new majors, Composer's default stability), what a consumer installs; nightly as
 # well, so that a new release of any of them shows here.
 name: parity
 
