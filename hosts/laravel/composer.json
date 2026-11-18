@@ -5,14 +5,14 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
-        "doctrine/dbal": "^4.2",
-        "doctrine/orm": "^3.5",
+        "doctrine/dbal": "^4.6",
+        "doctrine/orm": "^3.8",
         "laravel/framework": "^13.0",
-        "omnibridge/doctrine": "^3.0",
-        "omnibridge/eloquent": "^2.0",
+        "omnibridge/doctrine": "^4.0",
+        "omnibridge/eloquent": "^2.1",
         "omnibridge/laravel": "^2.0",
         "omnibridge/twig": "^2.0",
-        "omnisense/omnibase": "^7.0",
+        "omnisense/omnibase": "^7.1",
         "omnisense/omnibridge": "^2.0"
     },
     "autoload": {

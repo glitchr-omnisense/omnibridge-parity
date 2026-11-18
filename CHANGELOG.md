@@ -18,7 +18,9 @@ omnibridge/eloquent, on one MySQL database, written only with omnibase's `Base\`
   `Repositories::of()`, each case written once and compiled by omnibridge/doctrine and omnibridge/eloquent), and a
   listener of the neutral lifecycle events (`App\EntitySubscriber\CommentLifecycle`)
   hearing the same moments on each.
-- The hosts require omnisense/omnibase at `^7.0`, omnisense/omnibridge at `^2.0` and the bridges at their new majors
-  (omnibridge/doctrine and omnibridge/symfony `^3.0`, omnibridge/eloquent, omnibridge/laravel and omnibridge/twig
-  `^2.0`); `make ensemble` runs the same
+- The hosts require omnisense/omnibase at `^7.1`, omnisense/omnibridge at `^2.0` and the bridges at their current
+  majors (omnibridge/doctrine `^4.0`, whose date types are immutable, omnibridge/symfony `^3.1`, omnibridge/eloquent
+  `^2.1`, omnibridge/laravel and omnibridge/twig `^2.0`; doctrine/dbal `^4.6`, doctrine/orm `^3.8`): the nightly run
+  covers the current ensemble. The application's dates were `\DateTimeImmutable` already, and it registers no type
+  itself: nothing else changed, and no difference between the hosts came or went; `make ensemble` runs the same
   on local checkouts (path repositories in a `composer.ensemble.json` per host, never committed; `compose.ensemble.yml`).

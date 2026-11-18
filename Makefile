@@ -5,7 +5,7 @@ COMPOSER := composer update --no-interaction --no-progress --prefer-dist
 .PHONY: install up parity repositories versions down ci ensemble
 
 ## Each host's dependencies and the suite's, resolved afresh from Packagist (no lock is committed): the stable releases
-## the hosts' carets allow (omnisense/omnibase ^7.0, the bridges at their new majors), both persistence bridges in each host
+## the hosts' carets allow (omnisense/omnibase ^7.1, the bridges at their current majors), both persistence bridges in each host
 install:
 	$(COMPOSE) build symfony
 	$(COMPOSE) run --rm --no-deps -T symfony $(COMPOSER)
